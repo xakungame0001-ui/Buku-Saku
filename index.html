@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buku Saku v6.1 - Fix Export</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        .active-user { border: 3px solid #2563eb; background-color: #eff6ff; transform: translateY(-2px); }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+        .modal.active { display: flex; }
+        .btn-ctrl:disabled { opacity: 0.2; cursor: not-allowed; }
+    </style>
+</head>
+<body class="min-h-screen p-4 flex justify-center">
+
+    <div class="max-w-md w-full">
+        <div class="grid grid-cols-2 gap-3 mb-4">
+            <div class="bg-blue-600 text-white p-5 rounded-[2rem] shadow-xl text-center">
+                <h1 class="text-[10px] opacity-70 uppercase font-black tracking-widest">Saldo Kakak</h1>
+                <div id="bal-kakak" class="text-2xl font-black">Rp 0</div>
+            </div>
+            <div class="bg-orange-500 text-white p-5 rounded-[2rem] shadow-xl text-center">
+                <h1 class="text-[10px] opacity-70 uppercase font-black tracking-widest">Saldo Adek</h1>
+                <div id="bal-adek" class="text-2xl font-black">Rp 0</div>
+            </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-3xl shadow-sm mb-4 border border-gray-100 flex items-center justify-between">
+            <div class="flex gap-4">
+                <button onclick="shareReport()" class="flex flex-col items-center group">
+                    <span class="text-xl">📤</span>
+                    <span class="text-[8px] font-bold text-blue-500 uppercase">Lapor</span>
+                </button>
+                <button onclick="copyRawData()" class="flex flex-col items-center group">
+                    <span class="text-xl">💾</span>
+                    <span class="text-[8px] font-bold text-gray-400 uppercase">Backup</span>
+                </button>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <input type="date" id="check-date" onchange="showHistoryPopup()" 
+                    class="text-[10px] font-bold bg-slate-50 border-none rounded-full px-3 py-1 outline-none">
+                <div class="flex gap-3 border-l pl-3">
+                    <button id="btn-undo" onclick="undo()" class="btn-ctrl text-lg">↶</button>
+                    <button id="btn-redo" onclick="redo()" class="btn-ctrl text-lg">↷</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass p-6 rounded-[2.5rem] shadow-lg mb-6 border border-white">
+            <div class="flex gap-2 mb-5">
+                <button onclick="setUser('kakak')" id="btn-kakak" class="active-user flex-1 py-3 rounded-2xl border-2 font-black transition-all text-blue-600">KAKAK</button>
+                <button onclick="setUser('adek')" id="btn-adek" class="flex-1 py-3 rounded-2xl border-2 font-black transition-all text-orange-600">ADEK</button>
+            </div>
+            <div class="relative mb-4">
+                <span class="absolute left-4 top-4 font-bold text-gray-400">Rp</span>
+                <input type="number" id="amount" placeholder="0" class="w-full pl-12 p-4 bg-slate-50 border-none rounded-2xl text-2xl font-bold focus:ring-2 focus:ring-blue-400 outline-none">
+            </div>
+            <input type="text" id="note" placeholder="Keterangan transaksi..." class="w-full p-4 bg-slate-50 border-none rounded-2xl mb-6 text-sm outline-none">
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="executeAction('in')" class="bg-green-500 text-white py-5 rounded-2xl font-black shadow-lg">TABUNG</button>
+                <button onclick="executeAction('out')" class="bg-red-500 text-white py-5 rounded-2xl font-black shadow-lg">JAJAN</button>
+            </div>
+        </div>
+
+        <div class="px-2 pb-10">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="font-black text-gray-400 text-[10px] uppercase tracking-[0.2em]">Riwayat Aktivitas</h2>
+                <button onclick="resetData()" class="text-[9px] font-bold text-red-300">RESET</button>
+            </div>
+            <div id="history-list" class="space-y-3 max-h-80 overflow-y-auto pr-1"></div>
+        </div>
+    </div>
+
+    <div id="popup-history" class="modal" onclick="closeModal()">
+        <div class="bg-white w-full max-w-xs rounded-[3rem] p-8 shadow-2xl text-center" onclick="event.stopPropagation()">
+            <h3 id="pop-date-title" class="font-black text-gray-800 mb-6 uppercase text-sm tracking-widest"></h3>
+            <div class="space-y-4 mb-8">
+                <div class="flex justify-between p-4 bg-blue-50 rounded-2xl">
+                    <span class="font-bold text-blue-600">KAKAK</span>
+                    <span id="pop-kakak" class="font-black text-gray-800"></span>
+                </div>
+                <div class="flex justify-between p-4 bg-orange-50 rounded-2xl">
+                    <span class="font-bold text-orange-600">ADEK</span>
+                    <span id="pop-adek" class="font-black text-gray-800"></span>
+                </div>
+            </div>
+            <button onclick="closeModal()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold">TUTUP</button>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = 'kakak';
+        let historyStack = [];
+        let redoStack = [];
+        let state = JSON.parse(localStorage.getItem('bukuSaku_v6')) || { kakak: 0, adek: 0, history: [] };
+
+        function save() {
+            localStorage.setItem('bukuSaku_v6', JSON.stringify(state));
+            updateDisplay();
+        }
+
+        function executeAction(type) {
+            const amount = parseInt(document.getElementById('amount').value);
+            const note = document.getElementById('note').value;
+            if (!amount || amount <= 0) return;
+            if (type === 'out' && amount > state[currentUser]) return alert("Saldo Kurang!");
+
+            historyStack.push(JSON.stringify(state));
+            if (historyStack.length > 50) historyStack.shift();
+            redoStack = [];
+
+            const now = new Date();
+            state[currentUser] = type === 'in' ? state[currentUser] + amount : state[currentUser] - amount;
+            state.history.push({
+                owner: currentUser, type, amount, note: note || (type === 'in' ? 'Tabung' : 'Jajan'),
+                timestamp: now.getTime(),
+                displayDate: `${now.getDate()}/${now.getMonth()+1} ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`
+            });
+            save();
+            document.getElementById('amount').value = '';
+            document.getElementById('note').value = '';
+        }
+
+        // --- FIXED SHARE FUNCTION ---
+        function shareReport() {
+            const last5 = state.history.slice(-5).reverse();
+            let text = `*LAPORAN BUKU SAKU*\n`;
+            text += `----------------------------\n`;
+            text += `👤 *Kakak:* Rp ${state.kakak.toLocaleString('id-ID')}\n`;
+            text += `👤 *Adek:* Rp ${state.adek.toLocaleString('id-ID')}\n`;
+            text += `----------------------------\n`;
+            text += `*Transaksi Terakhir:*\n`;
+            last5.forEach(i => {
+                text += `• ${i.owner.toUpperCase()}: ${i.type === 'in' ? '(+)' : '(-)'} Rp ${i.amount.toLocaleString('id-ID')} (${i.note})\n`;
+            });
+
+            const encodedText = encodeURIComponent(text);
+            // Gunakan api.whatsapp.com agar lebih kompatibel dengan WebView Android
+            const url = `https://api.whatsapp.com/send?text=${encodedText}`;
+            
+            // Redirect langsung menggunakan window.location agar browser yang menangani transisinya
+            window.location.href = url;
+        }
+
+        function copyRawData() {
+            navigator.clipboard.writeText(JSON.stringify(state)).then(() => alert("Data Backup disalin!"));
+        }
+
+        function undo() {
+            if (historyStack.length === 0) return;
+            redoStack.push(JSON.stringify(state));
+            state = JSON.parse(historyStack.pop());
+            save();
+        }
+
+        function redo() {
+            if (redoStack.length === 0) return;
+            historyStack.push(JSON.stringify(state));
+            state = JSON.parse(redoStack.pop());
+            save();
+        }
+
+        function updateDisplay() {
+            document.getElementById('bal-kakak').innerText = `Rp ${state.kakak.toLocaleString('id-ID')}`;
+            document.getElementById('bal-adek').innerText = `Rp ${state.adek.toLocaleString('id-ID')}`;
+            document.getElementById('btn-undo').disabled = historyStack.length === 0;
+            document.getElementById('btn-redo').disabled = redoStack.length === 0;
+            const list = document.getElementById('history-list');
+            list.innerHTML = state.history.length === 0 ? '<p class="text-center text-gray-300 py-10 text-[10px] font-bold">BELUM ADA DATA</p>' :
+                state.history.map(item => `
+                    <div class="bg-white p-4 rounded-2xl flex justify-between items-center shadow-sm border border-gray-100">
+                        <div class="flex items-center gap-3">
+                            <div class="w-1.5 h-8 rounded-full ${item.owner === 'kakak' ? 'bg-blue-500' : 'bg-orange-500'}"></div>
+                            <div>
+                                <div class="font-black text-xs ${item.type === 'in' ? 'text-green-600' : 'text-red-500'}">${item.type === 'in' ? '+' : '-'} Rp ${item.amount.toLocaleString('id-ID')}</div>
+                                <div class="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">${item.note}</div>
+                            </div>
+                        </div>
+                        <div class="text-[8px] text-gray-300 font-black">${item.displayDate}</div>
+                    </div>
+                `).reverse().join('');
+        }
+
+        function showHistoryPopup() {
+            const dateVal = document.getElementById('check-date').value;
+            if (!dateVal) return;
+            const targetDate = new Date(dateVal);
+            targetDate.setHours(23, 59, 59, 999);
+            let tK = 0, tA = 0;
+            state.history.forEach(i => {
+                const val = i.type === 'in' ? i.amount : -i.amount;
+                if (i.timestamp <= targetDate.getTime()) {
+                    if (i.owner === 'kakak') tK += val; else tA += val;
+                }
+            });
+            document.getElementById('pop-date-title').innerText = new Date(dateVal).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' });
+            document.getElementById('pop-kakak').innerText = `Rp ${tK.toLocaleString('id-ID')}`;
+            document.getElementById('pop-adek').innerText = `Rp ${tA.toLocaleString('id-ID')}`;
+            document.getElementById('popup-history').classList.add('active');
+        }
+
+        function closeModal() { document.getElementById('popup-history').classList.remove('active'); }
+        function setUser(u) { currentUser = u; document.getElementById('btn-kakak').classList.toggle('active-user', u === 'kakak'); document.getElementById('btn-adek').classList.toggle('active-user', u === 'adek'); }
+        function init() { document.getElementById('check-date').value = new Date().toISOString().split('T')[0]; updateDisplay(); }
+        function resetData() { if (confirm("Hapus total data?")) { state = { kakak: 0, adek: 0, history: [] }; historyStack = []; redoStack = []; save(); } }
+        init();
+    </script>
+</body>
+</html>
