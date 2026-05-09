@@ -3,202 +3,236 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Buku Saku Kakak Adek</title>
+    <title>Trading Journey V18.5 - FULL MODULAR X-RAY</title>
     <style>
-        /* CSS OPTIMASI RESPON INSTAN */
-        :root { --blue: #2563eb; --orange: #f97316; --green: #22c55e; --red: #ef4444; }
-        
-        * { 
-            box-sizing: border-box; 
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation; /* MENCEGAH DELAY KLIK */
+        :root {
+            --bg-main: #0b0e11; --bg-card: #181a20; --accent: #fcd535;
+            --green: #0ecb81; --red: #f6465d; --purple: #bb86fc; --orange: #ff9800;
+            --text-dim: #848e9c; --border: #2b3139; --shadow: rgba(0,0,0,0.5);
         }
-
         body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            background-color: #f1f5f9; 
-            margin: 0; padding: 15px; 
-            display: flex; justify-content: center; 
-            user-select: none; /* MENCEGAH TEKS TERSELEKSI SAAT TAP CEPAT */
+            background-color: var(--bg-main); color: var(--text-dim); 
+            font-family: 'Inter', sans-serif; margin: 0; padding: 8px; 
+            height: 100vh; display: flex; flex-direction: column; 
+            box-sizing: border-box; overflow: hidden;
         }
-
-        .app-container { width: 100%; max-width: 400px; }
-        
-        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        .card { padding: 20px; border-radius: 24px; color: white; text-align: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        .card-kakak { background: var(--blue); }
-        .card-adek { background: var(--orange); }
-        .card h1 { font-size: 10px; text-transform: uppercase; margin: 0; opacity: 0.8; font-weight: 800; }
-        .balance { font-size: 20px; font-weight: 900; margin-top: 5px; }
-
-        .glass-card { background: white; padding: 20px; border-radius: 30px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        
-        .user-toggle { display: flex; gap: 10px; margin-bottom: 20px; }
-        .btn-user { 
-            flex: 1; padding: 12px; border-radius: 15px; border: 2px solid #e2e8f0; 
-            background: white; font-weight: bold; cursor: pointer; 
+        .panel { 
+            background: var(--bg-card); border: 1px solid var(--border); 
+            border-radius: 12px; padding: 12px; margin-bottom: 8px; 
+            box-shadow: 0 4px 6px var(--shadow); flex-shrink: 0; 
         }
-        .active-kakak { border-color: var(--blue) !important; color: var(--blue); background: #eff6ff !important; }
-        .active-adek { border-color: var(--orange) !important; color: var(--orange); background: #fff7ed !important; }
-        
-        input { 
-            width: 100%; padding: 15px; border-radius: 15px; border: 1px solid #e2e8f0; 
-            background: #f8fafc; font-size: 16px; margin-bottom: 10px; outline: none;
+        input, select { 
+            background: var(--bg-main); color: #fff; 
+            border: 1px solid var(--border); border-radius: 6px; 
+            font-size: 11px; padding: 6px; text-align: center; font-weight: bold;
+            box-sizing: border-box; outline: none; transition: border 0.3s;
+        }
+        input:focus, select:focus { border-color: var(--accent); }
+        button { 
+            border: none; border-radius: 6px; font-size: 11px; font-weight: 800; 
+            cursor: pointer; padding: 8px 12px; text-transform: uppercase; transition: all 0.2s;
         }
         
-        .action-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .btn-act { 
-            padding: 18px; border: none; border-radius: 20px; color: white; 
-            font-weight: 800; font-size: 14px; cursor: pointer;
+        .flex-row { display: flex; justify-content: space-between; align-items: stretch; gap: 8px; margin-bottom: 10px; }
+        .grid-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 10px; }
+        .input-box-group { 
+            display: flex; flex-direction: column; align-items: center; 
+            background: rgba(255,255,255,0.02); padding: 8px 6px; 
+            border-radius: 8px; border: 1px solid var(--border); 
         }
-        .btn-in { background: var(--green); }
-        .btn-out { background: var(--red); }
+        .input-box-group span { font-size: 9px; font-weight: 800; color: var(--text-dim); margin-bottom: 5px; letter-spacing: 0.5px;}
+        .input-box-group input, .input-box-group select { width: 100%; }
         
-        /* EFEK TEKAN INSTAN */
-        .btn-act:active, .btn-user:active { transform: scale(0.92); transition: 0.05s; }
+        .smc-panel { background: rgba(14, 203, 129, 0.05); border: 1px solid var(--green); border-radius: 12px; padding: 10px; margin-bottom: 8px; }
+        #smc-list { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+        .smc-tag { background: var(--green); color: #000; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 900; display: flex; align-items: center; gap: 5px; }
+        .smc-tag span { cursor: pointer; color: #fff; background: rgba(0,0,0,0.3); padding: 0 4px; border-radius: 2px; }
 
-        .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .history-list { display: flex; flex-direction: column; gap: 10px; max-height: 300px; overflow-y: auto; }
-        .hist-item { background: white; padding: 15px; border-radius: 20px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #f1f5f9; }
-        .indicator { width: 4px; height: 30px; border-radius: 10px; }
-        .val { font-size: 14px; font-weight: 800; }
-        .date { font-size: 9px; color: #cbd5e1; font-weight: 800; }
+        .delta-panel { background: rgba(187, 134, 252, 0.05); border: 1px solid var(--purple); border-radius: 12px; padding: 10px; margin-bottom: 8px; display: flex; flex-direction: column; }
+        .delta-value { font-size: 18px; font-weight: 900; color: #fff; font-family: 'Consolas', monospace;}
 
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; z-index: 100; padding: 20px; }
-        .modal.active { display: flex; }
-        .modal-content { background: white; width: 100%; max-width: 320px; border-radius: 40px; padding: 30px; text-align: center; }
+        #signal-box { text-align: center; font-size: 18px; font-weight: 900; letter-spacing: 1.5px; margin-bottom: 8px; }
+        .meter-bg { width: 100%; height: 6px; background: var(--border); display: flex; margin-bottom: 4px; border-radius: 10px; overflow: hidden; }
+        #bid-meter { background: var(--green); transition: width 0.4s ease; }
+        #ask-meter { background: var(--red); transition: width 0.4s ease; }
+        
+        .command-center { background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 8px; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
+        .edit-text-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+        .val-display { background: var(--bg-main); color: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 12px 4px; font-family: 'Consolas', monospace; font-weight: 900; font-size: 18px; text-align: center; }
+        
+        #btn-mission { width: 100%; height: 45px; font-size: 12px; background: var(--purple); color: #000; font-weight: 900; border-radius: 8px; }
+
+        /* POPUP SYSTEM */
+        .modal { display: none; position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; background: #000; flex-direction: column; padding: 5px; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid var(--border); }
+        .orderbook-area { flex-grow: 1; display: flex; gap: 8px; overflow: hidden; padding-top: 10px; }
+        .column { flex: 1; display: flex; flex-direction: column; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+        .row-container { overflow-y: auto; flex-grow: 1; scrollbar-width: none; }
+        .row { display: flex; justify-content: space-between; padding: 5px 10px; border-bottom: 1px solid rgba(43, 49, 57, 0.3); font-family: 'Consolas', monospace; font-size: 12px; }
+        .beton { background: rgba(252, 213, 53, 0.15); color: #fff; font-weight: 800; border-left: 3px solid var(--accent); }
     </style>
 </head>
 <body>
-
-    <div class="app-container">
-        <div class="dashboard">
-            <div class="card card-kakak"><h1>Kakak</h1><div id="bal-kakak" class="balance">Rp 0</div></div>
-            <div class="card card-adek"><h1>Adek</h1><div id="bal-adek" class="balance">Rp 0</div></div>
-        </div>
-
-        <div class="toolbar">
-            <div style="display:flex; gap:10px">
-                <button onclick="shareReport()" style="font-size:20px; background:none; border:none;">📤</button>
-                <button onclick="copyRawData()" style="font-size:20px; background:none; border:none;">💾</button>
+    <div class="panel">
+        <div class="flex-row">
+            <div style="display: flex; flex: 1; gap: 6px;">
+                <input type="text" id="input-symbol" value="BTCUSDT" style="width: 80px; color:var(--accent); font-size: 13px; text-transform: uppercase;"> 
+                <button onclick="changePair()" style="background:var(--border); color:#fff;">SET</button>
             </div>
-            <div style="display:flex; align-items:center; gap:5px">
-                <input type="date" id="check-date" onchange="showHistoryPopup()" style="margin:0; padding:5px; font-size:10px; width:auto;">
-                <button id="btn-undo" onclick="undo()" style="font-size:20px; background:none; border:none;" disabled>↶</button>
+            <div style="display: flex; gap: 6px;">
+                <button id="btn-sapu" onclick="toggleSapu()" style="background:var(--accent); color:#000;">🧹 ON</button>
+                <button id="btn-sound" onclick="toggleSound()">🔇 OFF</button>
+                <button onclick="toggleModal('ob-modal')" style="background:var(--purple); color:#fff;">🛰️ RADAR</button>
+                <button onclick="toggleChartModal()" style="background:var(--green); color:#fff;">📊</button>
             </div>
         </div>
 
-        <div class="glass-card">
-            <div class="user-toggle">
-                <button onclick="setUser('kakak')" id="btn-kakak" class="btn-user active-kakak">KAKAK</button>
-                <button onclick="setUser('adek')" id="btn-adek" class="btn-user">ADEK</button>
+        <div class="smc-panel">
+            <span style="font-size: 10px; font-weight: 900; color: var(--green);">🗺️ SMC / SnR AUDITOR ZONE</span>
+            <div style="display: flex; gap: 6px; margin-top: 8px;">
+                <input type="number" id="smc-price" placeholder="Input Harga SnR..." style="flex-grow: 1; text-align: left; padding-left: 10px;">
+                <button onclick="addSmcZone()" style="background: var(--green); color: #000;">ADD</button>
             </div>
-            <input type="number" id="amount" placeholder="Jumlah Rp" inputmode="numeric">
-            <input type="text" id="note" placeholder="Keterangan">
-            <div class="action-btns">
-                <button onclick="executeAction('in')" class="btn-act btn-in">TABUNG</button>
-                <button onclick="executeAction('out')" class="btn-act btn-out">JAJAN</button>
-            </div>
+            <div id="smc-list"></div>
         </div>
 
-        <div id="history-list" class="history-list"></div>
+        <div class="grid-row">
+            <div class="input-box-group"><span>ZONA</span><select id="input-group"><option value="0.02">0.02%</option><option value="0.05" selected>0.05%</option><option value="0.1">0.1%</option></select></div>
+            <div class="input-box-group"><span>BTN</span><input type="text" id="input-beton" value="10.0"></div>
+            <div class="input-box-group"><span>TMR</span><input type="number" id="input-timer" value="10"></div>
+            <div class="input-box-group"><span>NOISE</span><select id="input-noise"><option value="0">OFF</option><option value="0.01">0.01%</option><option value="0.02">0.02%</option><option value="0.05">0.05%</option><option value="0.1" selected>0.1%</option></select></div>
+        </div>
+        <div class="grid-row" style="margin-bottom: 0;">
+            <div class="input-box-group"><span>SL-%</span><select id="input-slgap"><option value="0.1">0.1%</option><option value="0.25" selected>0.25%</option><option value="0.5">0.5%</option></select></div>
+            <div class="input-box-group"><span>HLTH</span><select id="input-health"><option value="20">20%</option><option value="40" selected>40%</option><option value="60">60%</option></select></div>
+            <div class="input-box-group"><span>B-UP</span><select id="input-backup"><option value="0">OFF</option><option value="30">30%</option><option value="50" selected>50%</option></select></div>
+            <div class="input-box-group"><span>RNG</span><select id="input-range"><option value="0.1">0.1%</option><option value="0.2" selected>0.2%</option><option value="0.5">0.5%</option></select></div>
+        </div>
+        <div class="input-box-group" style="margin-top:8px"><span>Δ MIN FLOW (BTC)</span><input type="text" id="input-delta-min" value="3.5"></div>
+    </div>
+    
+    <div class="delta-panel">
+        <div id="delta-val-display" class="delta-value">0.00 BTC</div>
+        <div class="meter-bg" style="margin-top: 8px; height: 4px;"><div id="delta-meter" style="width:50%; background: var(--accent);"></div></div>
     </div>
 
-    <div id="popup-history" class="modal" onclick="closeModal()">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <h3 id="pop-date-title"></h3>
-            <div id="pop-res" style="text-align:left; font-weight:bold; margin-bottom:20px"></div>
-            <button onclick="closeModal()" style="width:100%; padding:15px; border:none; border-radius:20px; background:#1e293b; color:white; font-weight:bold">TUTUP</button>
+    <div class="command-center">
+        <div id="signal-box">MONITORING...</div>
+        <div class="edit-text-row">
+            <div class="val-display" id="st-entry">-</div>
+            <div class="val-display" id="st-sl" style="color:var(--red)">-</div>
+            <div class="val-display" id="st-tp" style="color:var(--green)">-</div>
+        </div>
+        <button id="btn-mission" onclick="toggleMission()">🛰️ LOCK MISSION</button>
+        <div class="meter-bg" style="margin-top: 15px;"><div id="bid-meter" style="width:50%"></div><div id="ask-meter" style="width:50%"></div></div>
+    </div>
+
+    <div id="ob-modal" class="modal">
+        <div class="modal-header">
+            <div style="font-weight: 900; color: var(--accent);" id="price-display">📍 WAITING...</div>
+            <button onclick="toggleModal('ob-modal')" style="background:var(--red); color:#fff;">CLOSE</button>
+        </div>
+        <div class="orderbook-area">
+            <div class="column"><div id="ask-list" class="row-container"></div></div>
+            <div class="column"><div id="bid-list" class="row-container"></div></div>
         </div>
     </div>
 
+    <div id="chart-modal" class="modal">
+        <div class="modal-header"><span>X-RAY CHART</span><button onclick="toggleChartModal()" style="background:var(--red); color:#fff;">CLOSE</button></div>
+        <div id="tv-container" style="flex-grow:1;"></div>
+    </div>
+
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script>
-        let currentUser = 'kakak';
-        let historyStack = [];
-        let state = JSON.parse(localStorage.getItem('bukuSaku_v6')) || { kakak: 0, adek: 0, history: [] };
+        // --- MASTER LOGIC V9.6.0 UTUH ---
+        let currentWs = null, signalTimer = null, missionActive = false, isSoundOn = false, isSapuOn = true, audioCtx = null;
+        let cumulativeDelta = 0.0, smcZones = [], wallTracker = {}, lastPrice = 0, targetWallPrice = 0, isCounting = false;
 
-        function save() {
-            localStorage.setItem('bukuSaku_v6', JSON.stringify(state));
-            updateDisplay();
+        function toggleModal(id) { const m = document.getElementById(id); m.style.display = (m.style.display === 'flex') ? 'none' : 'flex'; }
+        function toggleSapu() { isSapuOn = !isSapuOn; document.getElementById('btn-sapu').innerText = isSapuOn ? "🧹 ON" : "🧹 OFF"; }
+        function toggleSound() { isSoundOn = !isSoundOn; document.getElementById('btn-sound').innerText = isSoundOn ? "🔔 ON" : "🔇 OFF"; if(!audioCtx) audioCtx = new AudioContext(); }
+        function addSmcZone() { const p = parseFloat(document.getElementById('smc-price').value); if(p && !smcZones.includes(p)) { smcZones.push(p); renderSmcZones(); } document.getElementById('smc-price').value = ''; }
+        function renderSmcZones() { document.getElementById('smc-list').innerHTML = smcZones.map(z => `<div class="smc-tag">${z} <span onclick="smcZones=smcZones.filter(x=>x!==${z});renderSmcZones();">&times;</span></div>`).join(''); }
+        function toggleChartModal() { const m = document.getElementById('chart-modal'); m.style.display = (m.style.display === 'flex') ? 'none' : 'flex'; if(m.style.display === 'flex') new TradingView.widget({ "autosize": true, "symbol": "BINANCE:"+document.getElementById('input-symbol').value.toUpperCase(), "theme": "dark", "container_id": "tv-container", "hide_side_toolbar": false }); }
+
+        function updateDeltaUI() {
+            const valEl = document.getElementById('delta-val-display');
+            const thresh = parseFloat(document.getElementById('input-delta-min').value) || 3.5;
+            valEl.innerText = (cumulativeDelta > 0 ? "+" : "") + cumulativeDelta.toFixed(2) + " BTC";
+            valEl.style.color = Math.abs(cumulativeDelta) >= thresh ? (cumulativeDelta > 0 ? "var(--green)" : "var(--red)") : "#fff";
         }
 
-        function executeAction(type) {
-            const amt = parseInt(document.getElementById('amount').value);
-            const note = document.getElementById('note').value;
-            if (!amt || amt <= 0) return;
-            if (type === 'out' && amt > state[currentUser]) return alert("Saldo Kurang!");
-
-            historyStack.push(JSON.stringify(state));
-            const now = new Date();
-            state[currentUser] += (type === 'in' ? amt : -amt);
-            state.history.push({
-                owner: currentUser, type, amount: amt, note: note || (type === 'in' ? 'Tabung' : 'Jajan'),
-                timestamp: now.getTime(),
-                displayDate: `${now.getDate()}/${now.getMonth()+1} ${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}`
+        function process(raw, isBid, grpPercent, minB, sapu, noisePercent) {
+            let prices = {}, totalV = 0, wallP = 0, html = '';
+            if(raw.length === 0) return { html, totalV, wallP, prices };
+            let currentPrice = parseFloat(raw[0][0]);
+            let grp = currentPrice * (grpPercent / 100);
+            raw.forEach(d => { let p = Math.floor(parseFloat(d[0]) / grp) * grp; prices[p] = (prices[p] || 0) + parseFloat(d[1]); });
+            let sorted = Object.keys(prices).map(Number).sort((a, b) => isBid ? b - a : a - b);
+            sorted.forEach(p => {
+                let v = prices[p], dist = Math.abs(p - currentPrice) / currentPrice;
+                let isNoise = noisePercent > 0 ? (dist < noisePercent) : false;
+                if (v >= minB) { if(!isNoise) { totalV += v; wallP = wallP || p; } }
+                if (sapu && v < minB) return;
+                html += `<div class="row ${v>=minB ? (isNoise ? 'noise-wall':'beton') : ''}"><span>${p.toLocaleString()}</span><span>${v.toFixed(1)}</span></div>`;
             });
-            save();
-            document.getElementById('amount').value = '';
-            document.getElementById('note').value = '';
+            return { html, totalV, wallP, prices };
         }
 
-        function undo() {
-            if (historyStack.length > 0) { state = JSON.parse(historyStack.pop()); save(); }
-        }
-
-        function updateDisplay() {
-            document.getElementById('bal-kakak').innerText = `Rp ${state.kakak.toLocaleString('id-ID')}`;
-            document.getElementById('bal-adek').innerText = `Rp ${state.adek.toLocaleString('id-ID')}`;
-            document.getElementById('btn-undo').disabled = historyStack.length === 0;
-            const list = document.getElementById('history-list');
-            list.innerHTML = state.history.map(i => `
-                <div class="hist-item">
-                    <div style="display:flex; align-items:center; gap:10px">
-                        <div class="indicator" style="background:${i.owner === 'kakak' ? 'var(--blue)' : 'var(--orange)'}"></div>
-                        <div>
-                            <div style="font-size:12px; font-weight:bold; color:${i.type === 'in' ? 'var(--green)' : 'var(--red)'}">${i.type === 'in' ? '+' : '-'} Rp ${i.amount.toLocaleString('id-ID')}</div>
-                            <div style="font-size:10px; color:#94a3b8">${i.owner.toUpperCase()} - ${i.note}</div>
-                        </div>
-                    </div>
-                    <div class="date">${i.displayDate}</div>
-                </div>
-            `).reverse().join('');
-        }
-
-        function setUser(u) { 
-            currentUser = u; 
-            document.getElementById('btn-kakak').className = 'btn-user' + (u === 'kakak' ? ' active-kakak' : '');
-            document.getElementById('btn-adek').className = 'btn-user' + (u === 'adek' ? ' active-adek' : '');
-        }
-
-        function shareReport() {
-            let t = `*LAPORAN BUKU SAKU*\nKakak: Rp ${state.kakak.toLocaleString('id-ID')}\nAdek: Rp ${state.adek.toLocaleString('id-ID')}`;
-            window.location.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(t)}`;
-        }
-
-        function copyRawData() {
-            navigator.clipboard.writeText(JSON.stringify(state)).then(() => alert("Data Disalin!"));
-        }
-
-        function showHistoryPopup() {
-            const dateVal = document.getElementById('check-date').value;
-            const target = new Date(dateVal); target.setHours(23,59,59,999);
-            let tK = 0, tA = 0;
-            state.history.forEach(i => {
-                if (i.timestamp <= target.getTime()) {
-                    if (i.owner === 'kakak') tK += (i.type === 'in' ? i.amount : -i.amount);
-                    else tA += (i.type === 'in' ? i.amount : -i.amount);
+        function connect() {
+            if(currentWs) currentWs.close();
+            const sym = document.getElementById('input-symbol').value.toLowerCase();
+            currentWs = new WebSocket(`wss://stream.binance.com:443/stream?streams=${sym}@depth20@100ms/${sym}@aggTrade`);
+            
+            // JANGAN RESET FIX - GUNAKAN ROLLING 60S UNTUK AKURASI
+            let tradeHistory = [];
+            currentWs.onmessage = (e) => {
+                const p = JSON.parse(e.data);
+                const now = Date.now();
+                if(p.stream.includes('aggTrade')) {
+                    tradeHistory.push({ time: now, vol: parseFloat(p.data.q), side: p.data.m ? 'sell' : 'buy' });
+                    tradeHistory = tradeHistory.filter(t => now - t.time <= 60000);
+                    cumulativeDelta = tradeHistory.reduce((acc, t) => acc + (t.side === 'buy' ? t.vol : -t.vol), 0);
+                    updateDeltaUI();
+                } else {
+                    lastPrice = parseFloat(p.data.bids[0][0]);
+                    document.getElementById('price-display').innerText = "📍 " + lastPrice.toLocaleString();
+                    const bid = process(p.data.bids, true, parseFloat(document.getElementById('input-group').value), parseFloat(document.getElementById('input-beton').value), isSapuOn, parseFloat(document.getElementById('input-noise').value));
+                    const ask = process(p.data.asks, false, parseFloat(document.getElementById('input-group').value), parseFloat(document.getElementById('input-beton').value), isSapuOn, parseFloat(document.getElementById('input-noise').value));
+                    document.getElementById('bid-list').innerHTML = bid.html;
+                    document.getElementById('ask-list').innerHTML = ask.html;
+                    const bP = (bid.totalV + ask.totalV) > 0 ? (bid.totalV / (bid.totalV + ask.totalV)) * 100 : 50;
+                    document.getElementById('bid-meter').style.width = bP + "%";
+                    document.getElementById('ask-meter').style.width = (100-bP) + "%";
+                    if(missionActive && !isCounting && (bP >= 80 || bP <= 20)) startHunter(bP >= 80 ? 'buy' : 'sell', bP >= 80 ? bid : ask);
                 }
-            });
-            document.getElementById('pop-date-title').innerText = dateVal;
-            document.getElementById('pop-res').innerHTML = `Kakak: Rp ${tK.toLocaleString('id-ID')}<br>Adek: Rp ${tA.toLocaleString('id-ID')}`;
-            document.getElementById('popup-history').classList.add('active');
+            };
         }
 
-        function closeModal() { document.getElementById('popup-history').classList.remove('active'); }
-        function resetData() { if (confirm("Reset Semua?")) { state = { kakak: 0, adek: 0, history: [] }; historyStack = []; save(); } }
-        
-        document.getElementById('check-date').value = new Date().toISOString().split('T')[0];
-        updateDisplay();
+        function startHunter(side, data) {
+            isCounting = true; targetWallPrice = data.wallP;
+            let timeLeft = parseInt(document.getElementById('input-timer').value);
+            signalTimer = setInterval(() => {
+                if(timeLeft > 0) document.getElementById('signal-box').innerText = `LOCKING ${side.toUpperCase()} ${timeLeft--}s`;
+                else { clearInterval(signalTimer); isCounting = false; triggerSignal(targetWallPrice, side === 'buy'); }
+            }, 1000);
+        }
+
+        function triggerSignal(p, isBid) {
+            const slPct = parseFloat(document.getElementById('input-slgap').value) / 100;
+            const entry = isBid ? p + (p * 0.0001) : p - (p * 0.0001);
+            const sl = isBid ? p * (1 - slPct) : p * (1 + slPct);
+            const tp = isBid ? entry + (Math.abs(entry-sl)*3) : entry - (Math.abs(entry-sl)*3);
+            document.getElementById('st-entry').innerText = entry.toFixed(2);
+            document.getElementById('st-sl').innerText = sl.toFixed(2);
+            document.getElementById('st-tp').innerText = tp.toFixed(2);
+            document.getElementById('signal-box').innerText = (isBid ? "BUY" : "SELL") + " VALID ✅";
+        }
+
+        function toggleMission() { missionActive = !missionActive; document.getElementById('btn-mission').style.background = missionActive ? "var(--red)" : "var(--purple)"; }
+        function changePair() { connect(); }
+        window.onload = connect;
     </script>
 </body>
 </html>
